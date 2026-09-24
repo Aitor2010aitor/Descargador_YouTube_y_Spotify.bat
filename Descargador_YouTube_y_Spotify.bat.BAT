@@ -46,12 +46,14 @@ echo ==========================================
 echo.
 echo 1. Descargar Video (Maxima calidad)
 echo 2. Descargar Audio (MP3)
-echo 3. Volver al menu principal
+echo 3. Descargar Canal Completo
+echo 4. Volver al menu principal
 echo.
 echo ==========================================
-choice /c 123 /n /m "Selecciona una opcion [1-3]: "
+choice /c 1234 /n /m "Selecciona una opcion [1-4]: "
 
-if errorlevel 3 goto MENU_PRINCIPAL
+if errorlevel 4 goto MENU_PRINCIPAL
+if errorlevel 3 goto YT_CANAL
 if errorlevel 2 goto YT_AUDIO
 if errorlevel 1 goto YT_VIDEO
 
@@ -72,13 +74,10 @@ if not defined url (
 )
 
 echo.
+echo Carpeta de destino (Pulsa ENTER para usar %USERPROFILE%\Desktop\YouTube):
 set "carpeta="
-set /p "carpeta=Carpeta donde guardar el video: "
-if not defined carpeta (
-    echo Debes indicar una carpeta.
-    pause
-    goto YT_MENU
-)
+set /p "carpeta=Carpeta: "
+if not defined carpeta set "carpeta=%USERPROFILE%\Desktop\YouTube"
 
 if not exist "%carpeta%" mkdir "%carpeta%"
 
@@ -119,13 +118,10 @@ if not defined url (
 )
 
 echo.
+echo Carpeta de destino (Pulsa ENTER para usar %USERPROFILE%\Desktop\YouTube_MP3):
 set "carpeta="
-set /p "carpeta=Carpeta donde guardar el MP3: "
-if not defined carpeta (
-    echo Debes indicar una carpeta.
-    pause
-    goto YT_MENU
-)
+set /p "carpeta=Carpeta: "
+if not defined carpeta set "carpeta=%USERPROFILE%\Desktop\YouTube_MP3"
 
 if not exist "%carpeta%" mkdir "%carpeta%"
 
@@ -145,6 +141,52 @@ py -m yt_dlp ^
 echo.
 echo ==========================================
 echo Descarga finalizada.
+echo ==========================================
+pause
+goto YT_MENU
+
+:YT_CANAL
+cls
+echo ==========================================
+echo DESCARGAR CANAL COMPLETO (YOUTUBE)
+echo ==========================================
+echo.
+set "url="
+set /p "url=Introduce la URL del canal (ej: https://www.youtube.com/@nombre) : "
+if not defined url (
+    echo Debes introducir la URL del canal.
+    pause
+    goto YT_MENU
+)
+
+echo.
+echo Carpeta de destino (Pulsa ENTER para guardar en el Escritorio):
+echo %USERPROFILE%\Desktop\Canales_YouTube
+echo.
+set "carpeta="
+set /p "carpeta=Carpeta: "
+if not defined carpeta set "carpeta=%USERPROFILE%\Desktop\Canales_YouTube"
+
+if not exist "%carpeta%" mkdir "%carpeta%"
+
+echo.
+echo Procesando y descargando todos los videos del canal...
+echo.
+
+py -m yt_dlp ^
+-f "bestvideo+bestaudio/best" ^
+--merge-output-format mp4 ^
+--remux-video mp4 ^
+--embed-thumbnail ^
+--embed-metadata ^
+--no-keep-video ^
+-P "%carpeta%" ^
+-o "%%(uploader)s/%%(title)s.%%(ext)s" ^
+"%url%"
+
+echo.
+echo ==========================================
+echo Descarga del canal finalizada.
 echo ==========================================
 pause
 goto YT_MENU
